@@ -1,0 +1,974 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jul 24 19:51:54 2023
+
+@author: hugues.lamothe
+"""
+
+# =============================================================================
+# Dans ce script je veux basiquement sortir automatiquement les résultats de
+# spykingcircus dans un csv pour ne pas avoir à les recopier à la main
+# =============================================================================
+
+# =============================================================================
+# Evidemment on commence par importer les librairies nécessaires
+# =============================================================================
+from circus.shared.parser import CircusParser
+from circus.shared.files import load_data
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy  
+# =============================================================================
+
+# =============================================================================
+# Bien évidemment, il convient maintenant de définir les endroits où je vais 
+# travailler avec la liste des fichiers concernés
+# A noter que je vais le faire sujet par sujet
+# =============================================================================
+# =============================================================================
+# Subject = "DONC_GPI"
+# SubjectFolder = "G:/0_electrode_propre/Spyking-Circus-Thr4 - 3 electrodes/DystoniaRawData/RawExtensionFilesForSpykingCircusDystonia/{0}".format(Subject)
+# FileList = os.listdir(SubjectFolder)
+# 
+# CompletePathList = []
+# for file in FileList:
+#     CompletePath = SubjectFolder + "/" + file
+#     CompletePathList.append(CompletePath)
+#     continue
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Je crée le dictionnaire de mon sujet
+# =============================================================================
+# =============================================================================
+# FinalDict = {}
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# je sors les résultats
+# =============================================================================
+# =============================================================================
+# FileID = []
+# ChannelID = []
+# NumberOfSpikes = []
+# RPV = []
+# Template = []
+# for files in CompletePathList:
+#     if files.endswith(".params"):
+#         os.chdir(SubjectFolder)
+#         Params = CircusParser(files)
+#         Params.get_data_file()
+#         N_e = Params.getint('data', 'N_e')
+#         N_t = Params.getint('detection', 'N_t')
+#         Templates = load_data(Params, "templates")
+#         Results = load_data(Params, "results")
+#         KeyList = Results["amplitudes"].keys()
+#         for i in range(len(KeyList)):
+#             TemporaryTemp = Templates[:, i].toarray().reshape(N_e, N_t) ## je 
+#             # sors l'ensemble des channels' array pour chaque templates
+#             MaxAmplitude = []
+#             for j in range(len(TemporaryTemp)): ## je détermine dans quelle 
+#             # array est l'amplitude la plus haute, ce qui correspond au channel
+#             # choisi
+#                 MaxAmplitude.append(np.absolute(np.amax(TemporaryTemp[j])))
+#             for k in range(len(MaxAmplitude)): ## je sélectionne cette array 
+#             # avec laquelle je travaillerai ensuite
+#                 if MaxAmplitude[k] == np.absolute(max(MaxAmplitude)):
+#                     ChannelID.append(k)
+#                     Template.append(list(KeyList)[i])
+#                     FileID.append(files.replace(SubjectFolder + "/", ""))
+#                 else:
+#                     pass
+#         for key in KeyList:
+#             Spikes = Results["spiketimes"][key]
+#             NumberOfSpikes.append(len(Spikes))
+#             ISI = np.diff(Spikes)
+#             CountRPV = 0
+#             for isi in ISI:
+#                 if isi < 96: #à adapter en fonction de la fréquence 
+#                 # d'échantillon: 48 pour 24000HZ et 96 pour 48000Hz
+#                     CountRPV += 1
+#                     continue
+#                 else:
+#                     continue
+#             if len(ISI) > 0:
+#                 RPV.append(CountRPV/len(ISI))
+#             else:
+#                 RPV.append(0)
+#             continue
+#         continue
+#     else:
+#         continue
+#     continue
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Je sauve mes résultats dans un csv
+# =============================================================================
+# =============================================================================
+# FinalDict["ID"] = FileID
+# FinalDict["Channel"] = ChannelID
+# FinalDict["NumberOfSpikes"] = NumberOfSpikes
+# FinalDict["RPV"] = RPV
+# FinalDict["Template"] = Template
+# df = pd.DataFrame(FinalDict)
+# df.to_csv("F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/Template{0}.csv".format(Subject))
+# =============================================================================
+# =============================================================================
+            
+# =============================================================================
+# Une fois que mes fichiers sont créés, je les fusionne dans un seul. Attention
+# à GODR pour lequel j'ai du créer 2 fichiers: 1 à 24000 et 1 à 48000HZ'
+# =============================================================================
+
+# =============================================================================
+# Je dois maintenant regarder chaque cluster visuellement pour les merger à la
+# main!
+# =============================================================================
+
+# =============================================================================
+# Je dois d'abord définir le chemin bien évidemment avec la liste des fichiers
+# qu'il contient  
+# =============================================================================
+# =============================================================================
+# FilePath = "F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW"
+# FileList = os.listdir(FilePath)
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Je crée ma dataframe mergée
+# =============================================================================
+# =============================================================================
+# os.chdir(FilePath)
+# MergedDataFrame = pd.concat([pd.read_csv(f) for f in FileList], ignore_index=True)
+# print(MergedDataFrame)
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# j'enregistre ma nouvelle dataframe'
+# =============================================================================
+# =============================================================================
+# MergedDataFrame.to_csv("F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/FinalDataFrame.csv")
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Ensuite je dois mettre dans l'ordre les données de GODR en fonction 
+# qu'elles sont à 24000 ou 48000 HZ avant de continuer'
+# =============================================================================
+
+# =============================================================================
+# Maintenant que c'est fait, je vais ajouter le durées, les profondeurs et la
+# nature des troubles
+# =============================================================================
+
+# =============================================================================
+# J'importe la fonction de Brian Lau
+# =============================================================================
+os.chdir("E:\Python")
+from RankSurprise import Burst, val2rank
+from RankSurprisePause import Pause, val2rank
+# =============================================================================
+
+# =============================================================================
+# Ensuite, je veux générer les analyses sur les bursts. Pour cela, je vais le
+# faire à nouveau sujet par sujet, allons-y
+# =============================================================================
+# =============================================================================
+# Subject = "DONC_GPI" #NE PAS OUBLIER D ADAPTER LA FREQUENCE################
+# 
+# SubjectFolder = "G:/0_electrode_propre/Spyking-Circus-Thr4 - 3 electrodes/DystoniaRawData/RawExtensionFilesForSpykingCircusDystonia/{0}".format(Subject)
+# FileList = os.listdir(SubjectFolder)
+# 
+# # je crée le dictionnaire où seront stockés mes résultats:
+# DictResult = {}
+# 
+# # d'abord je dois créé ma liste de fichiers qui correspond aux ID dans le .csv
+# ParamsFileList = []
+# for Elt in FileList:
+#     if Elt.endswith(".params"):
+#         ParamsFileList.append(Elt)
+#         continue
+#     else:
+#         continue
+# 
+# # je charge le csv
+# SourceFile = "D:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/FinalDataFrame.csv"
+# data = pd.read_csv(SourceFile, sep = ";", decimal = ".", encoding = 'latin1')
+# 
+# # je crée un dictionnaire comprenant chaque fichier (ID) comme clé, avec les 
+# # association de templates en valeurs
+# TempDict = {}
+# for i in range(0, len(data.loc[:, "ID"])):
+#     CurrentFile = data.loc[i, "ID"]
+#     if Subject in CurrentFile:
+#         if CurrentFile in TempDict: # soit la clé existe déjà
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 continue
+#         else: # soit elle n'existe pas
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TempDict[CurrentFile] = []
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 #c'est très bizarre mais je suis obligé de faire tout ça sinon
+#                 #il me sépare la string quand il crée la clé: "0", "+", "2"
+#                 #au lieu de "0+2". Doit y avoir plus simple mais là je l'ai pas
+#                 continue
+#     else:
+#         continue
+# print(TempDict)
+# 
+# NumberOfBurstsRSList = []
+# NumberOfSpikesInBurstsRSList = []
+# BurstTimeLengthRSList = []
+# IDList = []
+# TemplatesList = []
+# 
+# os.chdir(SubjectFolder)
+# for Files in ParamsFileList:
+#     if Files in TempDict.keys():  
+#         Params = CircusParser(Files)
+#         Results = load_data(Params, 'results')
+#         KeyList = Results["spiketimes"].keys()
+#         SpikeTimesDict = {} #c'est là dedans que sont stockés tous les 
+#         #spiketimes de ma file classés par 'temp_x': [.....]
+#         for Keys in KeyList:
+#             Spiketimes = Results["spiketimes"][Keys]
+#             SpikeTimesDict[Keys] = Spiketimes #je remplis mon SpikeTimesDict
+#             continue
+#         CurrentTemplateList = TempDict[Files] # ici je crée une liste des 
+#         #templates tels que figurés dans mon csv: "2" ou "0+2"
+#         for Elt in CurrentTemplateList:
+#             TemplatesList.append(Elt)
+#             Elt1 = Elt.replace("+", " ")
+#             Elt2 = Elt1.split() #je splite chaque éléments pour ensuite pouvoir
+#             #fusionner les spiketimes correspondants
+#             FinalSpikeTimes = []
+#             for Elt3 in Elt2:
+#                 print(Elt2)
+#                 FinalSpikeTimes.append(SpikeTimesDict["temp_{0}".format(Elt3)])
+#                 continue
+#             print(Files)
+#             FinalSpikeTimes = [item for sublist in FinalSpikeTimes for item in sublist]
+#             FinalSpikeTimes = sorted(FinalSpikeTimes)
+#             NumberOfBurstsRSList.append(len(Burst(FinalSpikeTimes)[2]))
+#             NumberOfSpikesInBurstsRSList.append(np.mean(Burst(FinalSpikeTimes)[1]))
+#             BurstTimeLengthRSList.append(np.mean(Burst(FinalSpikeTimes)[3]))
+#             IDList.append(Files)
+#             print("DystoniaBurstsRS")
+#             continue
+#     else:
+#         continue
+# 
+# 
+# #Je dois mettre les durées dans les bonnes unités, renvoit les résultats en ms
+# BurstIimeLenghtRSListAdjusted = []
+# for Elt in BurstTimeLengthRSList:
+#     BurstIimeLenghtRSListAdjusted.append(Elt/48) #NE PAS OUBLIER D ADAPTER#####
+#     continue
+#     
+# # j'enregistre les résultats dans mon dictionnaire
+# DictResult["ID"] = IDList
+# DictResult["TemplateID"] = TemplatesList
+# DictResult["BurstDuration(ms)"] = BurstIimeLenghtRSListAdjusted
+# DictResult["NumberOfSpikeInBurst"] = NumberOfSpikesInBurstsRSList
+# DictResult["NumberOfBursts"] = NumberOfBurstsRSList
+# 
+# # j'enregistre dans un fichier csv
+# df = pd.DataFrame(DictResult)
+# df.to_csv("F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/BurstResults{0}.csv".format(Subject))
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Il faut maintenant que je calcule les pauses, sur un mode de nombre de 
+# moments de plus de 500 ms par cluster
+# =============================================================================
+# =============================================================================
+# Subject = "THUC_GPi" #NE PAS OUBLIER D ADAPTER LA FREQUENCE################
+# 
+# SubjectFolder = "G:/0_electrode_propre/Spyking-Circus-Thr4 - 3 electrodes/DystoniaRawData/RawExtensionFilesForSpykingCircusDystonia/{0}".format(Subject)
+# FileList = os.listdir(SubjectFolder)
+# 
+# # je crée le dictionnaire où seront stockés mes résultats:
+# DictResult = {}
+# 
+# # d'abord je dois créé ma liste de fichiers qui correspond aux ID dans le .csv
+# ParamsFileList = []
+# for Elt in FileList:
+#     if Elt.endswith(".params"):
+#         ParamsFileList.append(Elt)
+#         continue
+#     else:
+#         continue
+# 
+# # je charge le csv
+# SourceFile = "F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/FinalDataFrame.csv"
+# data = pd.read_csv(SourceFile, sep = ";", decimal = ".", encoding = 'latin1')
+# 
+# # Subject1 = "TPEP_06-06-2012"
+# # je crée un dictionnaire comprenant chaque fichier (ID) comme clé, avec les 
+# # association de templates en valeurs
+# TempDict = {}
+# for i in range(0, len(data.loc[:, "ID"])):
+#     CurrentFile = data.loc[i, "ID"]
+#     if Subject in CurrentFile:
+#         if CurrentFile in TempDict: # soit la clé existe déjà
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 continue
+#         else: # soit elle n'existe pas
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TempDict[CurrentFile] = []
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 #c'est très bizarre mais je suis obligé de faire tout ça sinon
+#                 #il me sépare la string quand il crée la clé: "0", "+", "2"
+#                 #au lieu de "0+2". Doit y avoir plus simple mais là je l'ai pas
+#                 continue
+#     else:
+#         continue
+# 
+# TemplatesList = []
+# PausesNumberList500ms = []
+# PausesDurationList500ms = []
+# PausesDurationList500msAdjusted = []
+# IDList = []
+# 
+# os.chdir(SubjectFolder)
+# for Files in ParamsFileList:
+#     if Files in TempDict.keys(): 
+#         Params = CircusParser(Files)
+#         Results = load_data(Params, 'results')
+#         KeyList = Results["spiketimes"].keys()
+#         SpikeTimesDict = {}
+#         for Keys in KeyList:
+#             Spiketimes = Results["spiketimes"][Keys]
+#             SpikeTimesDict[Keys] = Spiketimes
+#             continue
+#         CurrentTemplateList = TempDict[Files]
+#         for Elt in CurrentTemplateList:
+#             TemplatesList.append(Elt)
+#             Elt1 = Elt.replace("+", " ")
+#             Elt2 = Elt1.split() #je splite chaque éléments pour ensuite pouvoir
+#             #fusionner les spiketimes correspondants
+#             FinalSpikeTimes = []
+#             for Elt3 in Elt2:
+#                 FinalSpikeTimes.append(SpikeTimesDict["temp_{0}".format(Elt3)])
+#                 continue
+#             FinalSpikeTimes = [item for sublist in FinalSpikeTimes for item in sublist]
+#             FinalSpikeTimes = sorted(FinalSpikeTimes)
+#             PausesNumber = 0
+#             PausesDuration = []
+#             for i in range(len(FinalSpikeTimes)):
+#                 if i + 1 > len(FinalSpikeTimes) - 1:
+#                     pass
+#                 elif FinalSpikeTimes[i + 1] - FinalSpikeTimes[i] >= 24000: # mettre 24000 pour
+#                 # 48000 Hz ou 12000 pour 24000 Hz ##NE PAS OUBLIER D ADAPTER###
+#                     PausesNumber += 1
+#                     PausesDuration.append(FinalSpikeTimes[i + 1] - FinalSpikeTimes[i])
+#                 else:
+#                     pass
+#             IDList.append(Files)
+#             PausesNumberList500ms.append(PausesNumber)
+#             PausesDurationList500ms.append(np.mean(PausesDuration))
+#         else:
+#             pass
+#     
+# for Elt in PausesDurationList500ms:
+#     PausesDurationList500msAdjusted.append(Elt/48) #NE PAS OUBLIER D ADAPTER###
+#     continue
+# 
+# DictResult["ID"] = IDList
+# DictResult["TemplateID"] = TemplatesList
+# DictResult["PauseNumberList500ms"] = PausesNumberList500ms
+# DictResult["PausesDurationList500msAdjusted"] = PausesDurationList500msAdjusted
+# 
+# df = pd.DataFrame(DictResult)
+# df.to_csv("F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/PausesResults{0}.csv".format(Subject))
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Il faut maintenant que je calcule les index, burst et pause index
+# définition burst index = ISI(<10 ms)/ISI(>10 ms)
+# définition pause index = ISI (>500 ms)/ISI(<500 ms)
+# =============================================================================
+# =============================================================================
+# Subject = "DONC_GPI" ### ADAPTER LA FREQUENCE!!!!!!!######################
+# SubjectFolder = "G:/0_electrode_propre/Spyking-Circus-Thr4 - 3 electrodes/DystoniaRawData/RawExtensionFilesForSpykingCircusDystonia/{0}".format(Subject)
+# FileList = os.listdir(SubjectFolder)
+# 
+# ParamsFileList = []
+# for Elt in FileList:
+#     if Elt.endswith(".params"):
+#         ParamsFileList.append(Elt)
+#         continue
+#     else:
+#         continue
+# 
+# SourceFile = "F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/FinalDataFrameMergedGPI.csv"
+# data = pd.read_csv(SourceFile, sep = ";", decimal = ".", encoding = 'latin1')
+# 
+# # Subject1 = "TPEP_06-06-2012"
+# # je crée un dictionnaire comprenant chaque fichier (ID) comme clé, avec les 
+# # association de templates en valeurs
+# TempDict = {}
+# for i in range(0, len(data.loc[:, "ID"])):
+#     CurrentFile = data.loc[i, "ID"]
+#     if Subject in CurrentFile:
+#         if CurrentFile in TempDict: # soit la clé existe déjà
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 continue
+#         else: # soit elle n'existe pas
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TempDict[CurrentFile] = []
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 #c'est très bizarre mais je suis obligé de faire tout ça sinon
+#                 #il me sépare la string quand il crée la clé: "0", "+", "2"
+#                 #au lieu de "0+2". Doit y avoir plus simple mais là je l'ai pas
+#                 continue
+#     else:
+#         continue
+# 
+# FinalDict = {}
+# 
+# BurstIndexList = []
+# PauseIndexList = []
+# FileID = []
+# Template = []
+# 
+# os.chdir(SubjectFolder)
+# for Files in ParamsFileList:
+#     if Files in TempDict.keys():  
+#         Params = CircusParser(Files)
+#         Results = load_data(Params, 'results')
+#         KeyList = Results["spiketimes"].keys()
+#         SpikeTimesDict = {} #c'est là dedans que sont stockés tous les 
+#         #spiketimes de ma file classés par 'temp_x': [.....]
+#         for Keys in KeyList:
+#             Spiketimes = Results["spiketimes"][Keys]
+#             SpikeTimesDict[Keys] = Spiketimes #je remplis mon SpikeTimesDict
+#             continue
+#         CurrentTemplateList = TempDict[Files] # ici je crée une liste des 
+#         #templates tels que figurés dans mon csv: "2" ou "0+2"
+#         for Elt in CurrentTemplateList:
+#             FileID.append(Files)
+#             Template.append(Elt)
+#             Elt1 = Elt.replace("+", " ")
+#             Elt2 = Elt1.split() #je splite chaque éléments pour ensuite pouvoir
+#             #fusionner les spiketimes correspondants
+#             FinalSpikeTimes = []
+#             for Elt3 in Elt2:
+#                 FinalSpikeTimes.append(SpikeTimesDict["temp_{0}".format(Elt3)])
+#                 continue
+#             FinalSpikeTimes = [item for sublist in FinalSpikeTimes for item in sublist]
+#             FinalSpikeTimes = sorted(FinalSpikeTimes)
+#             ISI = np.diff(FinalSpikeTimes)
+#             CountInfTenMs = 0
+#             CountSupTenMs = 0
+#             CountSupToFiveHundredsMs = 0
+#             CountInfToFiveHundredsMs = 0
+#             for isi in ISI:
+#                 if isi <= 480: #à adapter en fonction de la fréquence 
+#                 # d'échantillon: 480 pour 48000HZ et 240 pour 24000Hz
+#                     CountInfTenMs += 1
+#                     continue
+#                 else:
+#                     CountSupTenMs += 1
+#                     continue
+#             for isi in ISI:
+#                 if isi <= (480 * 50): #à adapter en fonction de la fréquence 
+#                 # d'échantillon: 480 pour 48000HZ et 240 pour 24000Hz
+#                     CountInfToFiveHundredsMs += 1
+#                     continue
+#                 else:
+#                     CountSupToFiveHundredsMs += 1
+#                     continue
+#             if len(ISI) > 0:
+#                 if CountSupTenMs == 0:
+#                     BurstIndexList.append(np.nan)
+#                 else:
+#                     BurstIndexList.append(CountInfTenMs/CountSupTenMs)
+#             else:
+#                 BurstIndexList.append(np.nan)
+#             if len(ISI) > 0:
+#                 if CountInfToFiveHundredsMs == 0:
+#                     PauseIndexList.append(np.nan)
+#                 else:
+#                     PauseIndexList.append(CountSupToFiveHundredsMs/CountInfToFiveHundredsMs)
+#             else:
+#                 PauseIndexList.append(np.nan)
+#             continue
+#     else:
+#         continue
+# 
+# FinalDict["ID"] = FileID
+# FinalDict["BurstIndex"] = BurstIndexList
+# FinalDict["PauseIndex"] = PauseIndexList
+# FinalDict["Template"] = Template
+# 
+# df = pd.DataFrame(FinalDict)
+# df.to_csv("F:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/Indexes{0}.csv".format(Subject))
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Je crée ma base de donnée par sujets
+# =============================================================================
+# =============================================================================
+# File = "E:/Ecrits/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/ResultsPostKatia/DataBaseAfterAllChangementsDueToKatia/FilesToUse+++++/FinalDataFrameMergedGPI25WithoutBads.csv"
+# 
+# data = pd.read_csv(File, sep = ",", decimal = ".", encoding='latin1')
+# 
+# DurationList = []
+# DepthList = []
+# IDList = []
+# DisorderList = []
+# SpikeList = []
+# RPVList = []
+# BurstDurationList = []
+# NumberOfSpikeInBurstList = []
+# NumberOfBurstList = []
+# PauseNumberList = []
+# PauseDurationList = []
+# BurstIndexList = []
+# PauseIndexList = []
+# 
+# for i in range(0, len(data.loc[:, "ID"]) + 1): #je dois toujours mettre le + 1
+# # car range ne considère pas le dernier item!
+#     Subject = data.loc[i, "ID"][0:4]
+#     if i == 0:
+#         TemporaryDurationList = []
+#         TemporaryDepthList = []
+#         TemporarySpikeList = []
+#         TemporaryRPVList = []
+#         TemporaryBurstDurationList = []
+#         TemporaryNumberOfSpikeInBurstList = []
+#         TemporaryNumberOfBurstList = []
+#         TemporaryPauseNumberList = []
+#         TemporaryPauseDurationList = []
+#         TemporaryBurstIndexList = []
+#         TemporaryPauseIndexList = []
+#         TemporaryDurationList.append(data.loc[i, "RealDuration.min."])
+#         TemporaryDepthList.append(data.loc[i, "Depth"])
+#         TemporarySpikeList.append(data.loc[i, "NumberOfSpikesCleanedByMin"])
+#         TemporaryRPVList.append(data.loc[i, "RPVCleaned"])
+#         TemporaryNumberOfBurstList.append(data.loc[i, "NumberOfBurstsByMin"])
+#         TemporaryPauseNumberList.append(data.loc[i, "PauseNumberList500msByMin"])
+#         TemporaryBurstIndexList.append(data.loc[i, "BurstIndex"])
+#         TemporaryPauseIndexList.append(data.loc[i, "PauseIndex"])
+#         if np.isnan(data.loc[i, "BurstDuration.ms."]):
+#             pass
+#         else:
+#             TemporaryBurstDurationList.append(data.loc[i, "BurstDuration.ms."])
+#             TemporaryNumberOfSpikeInBurstList.append(data.loc[i, "NumberOfSpikeInBurst"])
+#         if np.isnan(data.loc[i, "PausesDurationList500msAdjusted"]):
+#             pass
+#         else:
+#             TemporaryPauseDurationList.append(data.loc[i, "PausesDurationList500msAdjusted"])
+#         continue
+#     elif i + 1 == len(data.loc[:, "ID"]):
+#         DurationList.append(np.mean(TemporaryDurationList))
+#         DepthList.append(np.mean(TemporaryDepthList))
+#         IDList.append(Subject)
+#         DisorderList.append(data.loc[i, "Disorder"])
+#         TemporarySpikeList.append(data.loc[i, "NumberOfSpikesCleanedByMin"])
+#         TemporaryRPVList.append(data.loc[i, "RPVCleaned"])
+#         TemporaryNumberOfBurstList.append(data.loc[i, "NumberOfBurstsByMin"])
+#         TemporaryPauseNumberList.append(data.loc[i, "PauseNumberList500msByMin"])
+#         TemporaryBurstIndexList.append(data.loc[i, "BurstIndex"])
+#         TemporaryPauseIndexList.append(data.loc[i, "PauseIndex"])
+#         SpikeList.append(np.mean(TemporarySpikeList))
+#         RPVList.append(np.mean(TemporaryRPVList))
+#         NumberOfBurstList.append(np.mean(TemporaryNumberOfBurstList))
+#         PauseNumberList.append(np.mean(TemporaryPauseNumberList))
+#         BurstIndexList.append(np.mean(TemporaryBurstIndexList))
+#         PauseIndexList.append(np.mean(TemporaryPauseIndexList))
+#         if np.isnan(data.loc[i, "BurstDuration.ms."]):
+#             BurstDurationList.append(np.mean(TemporaryBurstDurationList))
+#             NumberOfSpikeInBurstList.append(np.mean(TemporaryNumberOfSpikeInBurstList))
+#         else:
+#             TemporaryBurstDurationList.append(data.loc[i, "BurstDuration.ms."])
+#             TemporaryNumberOfSpikeInBurstList.append(data.loc[i, "NumberOfSpikeInBurst"])
+#             BurstDurationList.append(np.mean(TemporaryBurstDurationList))
+#             NumberOfSpikeInBurstList.append(np.mean(TemporaryNumberOfSpikeInBurstList))
+#         if np.isnan(data.loc[i, "PausesDurationList500msAdjusted"]):
+#             PauseDurationList.append(np.mean(TemporaryPauseDurationList))
+#         else:
+#             TemporaryPauseDurationList.append(data.loc[i, "PausesDurationList500msAdjusted"])
+#             PauseDurationList.append(np.mean(TemporaryPauseDurationList))
+#         break
+#     elif data.loc[i + 1, "ID"][0:4] == Subject:
+#         TemporarySpikeList.append(data.loc[i, "NumberOfSpikesCleanedByMin"])
+#         TemporaryRPVList.append(data.loc[i, "RPVCleaned"])
+#         TemporaryNumberOfBurstList.append(data.loc[i, "NumberOfBurstsByMin"])
+#         TemporaryPauseNumberList.append(data.loc[i, "PauseNumberList500msByMin"])
+#         TemporaryBurstIndexList.append(data.loc[i, "BurstIndex"])
+#         TemporaryPauseIndexList.append(data.loc[i, "PauseIndex"])
+#         if np.isnan(data.loc[i, "BurstDuration.ms."]):
+#             pass
+#         else:
+#             TemporaryBurstDurationList.append(data.loc[i, "BurstDuration.ms."])
+#             TemporaryNumberOfSpikeInBurstList.append(data.loc[i, "NumberOfSpikeInBurst"])
+#         if np.isnan(data.loc[i, "PausesDurationList500msAdjusted"]):
+#             pass
+#         else:
+#             TemporaryPauseDurationList.append(data.loc[i, "PausesDurationList500msAdjusted"])
+#         if data.loc[i - 1, "ID"] == data.loc[i, "ID"]:
+#             continue
+#         elif data.loc[i - 1, "ID"] != data.loc[i, "ID"]:
+#             TemporaryDurationList.append(data.loc[i, "RealDuration.min."])
+#             TemporaryDepthList.append(data.loc[i, "Depth"])
+#             continue
+#     elif data.loc[i + 1, "ID"][0:4] != Subject:
+#         TemporarySpikeList.append(data.loc[i, "NumberOfSpikesCleanedByMin"])
+#         TemporaryRPVList.append(data.loc[i, "RPVCleaned"])
+#         TemporaryNumberOfBurstList.append(data.loc[i, "NumberOfBurstsByMin"])
+#         TemporaryPauseNumberList.append(data.loc[i, "PauseNumberList500msByMin"])
+#         TemporaryBurstIndexList.append(data.loc[i, "BurstIndex"])
+#         TemporaryPauseIndexList.append(data.loc[i, "PauseIndex"])
+#         SpikeList.append(np.mean(TemporarySpikeList))
+#         RPVList.append(np.mean(TemporaryRPVList))
+#         NumberOfBurstList.append(np.mean(TemporaryNumberOfBurstList))
+#         PauseNumberList.append(np.mean(TemporaryPauseNumberList))
+#         BurstIndexList.append(np.mean(TemporaryBurstIndexList))
+#         PauseIndexList.append(np.mean(TemporaryPauseIndexList))
+#         TemporarySpikeList = []
+#         TemporaryRPVList = []
+#         TemporaryNumberOfBurstList = []
+#         TemporaryPauseNumberList = []
+#         if np.isnan(data.loc[i, "BurstDuration.ms."]):
+#             BurstDurationList.append(np.mean(TemporaryBurstDurationList))
+#             NumberOfSpikeInBurstList.append(np.mean(TemporaryNumberOfSpikeInBurstList))
+#             TemporaryBurstDurationList = []
+#             TemporaryNumberOfSpikeInBurstList = []
+#         else:
+#             TemporaryBurstDurationList.append(data.loc[i, "BurstDuration.ms."])
+#             TemporaryNumberOfSpikeInBurstList.append(data.loc[i, "NumberOfSpikeInBurst"])
+#             BurstDurationList.append(np.mean(TemporaryBurstDurationList))
+#             NumberOfSpikeInBurstList.append(np.mean(TemporaryNumberOfSpikeInBurstList))
+#             TemporaryBurstDurationList = []
+#             TemporaryNumberOfSpikeInBurstList = []
+#         if np.isnan(data.loc[i, "PausesDurationList500msAdjusted"]):
+#             PauseDurationList.append(np.mean(TemporaryPauseDurationList))
+#             TemporaryPauseDurationList = []
+#             pass
+#         else:
+#             TemporaryPauseDurationList.append(data.loc[i, "PausesDurationList500msAdjusted"])
+#             PauseDurationList.append(np.mean(TemporaryPauseDurationList))
+#             TemporaryPauseDurationList = []
+#         if data.loc[i - 1, "ID"] == data.loc[i, "ID"]:
+#             DurationList.append(np.mean(TemporaryDurationList))
+#             DepthList.append(np.mean(TemporaryDepthList))
+#             IDList.append(Subject)
+#             DisorderList.append(data.loc[i, "Disorder"])
+#             TemporaryDurationList = []
+#             TemporaryDepthList = []
+#             continue
+#         elif data.loc[i - 1, "ID"] != data.loc[i, "ID"]:
+#             TemporaryDurationList.append(data.loc[i, "RealDuration.min."])
+#             TemporaryDepthList.append(data.loc[i, "Depth"])
+#             DurationList.append(np.mean(TemporaryDurationList))
+#             DepthList.append(np.mean(TemporaryDepthList))
+#             IDList.append(Subject)
+#             DisorderList.append(data.loc[i, "Disorder"])
+#             TemporaryDurationList = []
+#             TemporaryDepthList = []
+#             continue
+# 
+# ResultDict = {}
+# ResultDict["IDList"] = IDList
+# ResultDict["DisorderList"] = DisorderList
+# ResultDict["DepthList"] = DepthList
+# ResultDict["DurationList(min)"] = DurationList
+# ResultDict["SpikeList"] = SpikeList
+# ResultDict["RPVList"] = RPVList
+# ResultDict["BurstDurationList(ms)"] = BurstDurationList
+# ResultDict["NumberOfSpikeInBurstList"] = NumberOfSpikeInBurstList
+# ResultDict["NumberOfBurstList"] = NumberOfBurstList
+# ResultDict["PauseNumberList"] = PauseNumberList
+# ResultDict["PauseDurationList"] = PauseDurationList
+# ResultDict["BurstIndex"] = BurstIndexList
+# ResultDict["PauseIndex"] = PauseIndexList
+# 
+# df = pd.DataFrame(ResultDict)
+# df.to_csv("E:/Ecrits/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/ResultsPostKatia/DataBaseAfterAllChangementsDueToKatia/FilesToUse+++++/RésultatsMoyennésParSujetWithoutBads.csv")
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Calcul de l'ISIcv
+# =============================================================================
+# =============================================================================
+# Subject = "THUC_GPi" #ADAPTER LES FREQUENCES!!!!!
+# SubjectFolder = "G:/0_electrode_propre/Spyking-Circus-Thr4 - 3 electrodes/DystoniaRawData/RawExtensionFilesForSpykingCircusDystonia/{0}".format(Subject)
+# FileList = os.listdir(SubjectFolder)
+# 
+# ParamsFileList = []
+# for Elt in FileList:
+#     if Elt.endswith(".params"):
+#         ParamsFileList.append(Elt)
+#         continue
+#     else:
+#         continue
+# 
+# SourceFile = "D:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/FinalDataFrameMergedGPI.csv"
+# data = pd.read_csv(SourceFile, sep = ";", decimal = ".", encoding = 'latin1')
+# 
+# # Subject1 = "TPEP_06-06-2012"
+# # je crée un dictionnaire comprenant chaque fichier (ID) comme clé, avec les 
+# # association de templates en valeurs
+# TempDict = {}
+# for i in range(0, len(data.loc[:, "ID"])):
+#     CurrentFile = data.loc[i, "ID"]
+#     if Subject in CurrentFile:
+#         if CurrentFile in TempDict: # soit la clé existe déjà
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 continue
+#         else: # soit elle n'existe pas
+#             if pd.isna(data.loc[i, "TemplateCleaned"]):
+#                 continue
+#             else:
+#                 TempDict[CurrentFile] = []
+#                 TemporaryList = list(TempDict[CurrentFile])
+#                 TemporaryList.append(data.loc[i, "TemplateCleaned"])
+#                 TempDict[CurrentFile] = TemporaryList
+#                 #c'est très bizarre mais je suis obligé de faire tout ça sinon
+#                 #il me sépare la string quand il crée la clé: "0", "+", "2"
+#                 #au lieu de "0+2". Doit y avoir plus simple mais là je l'ai pas
+#                 continue
+#     else:
+#         continue
+# 
+# FileID = []
+# Template = []
+# ISIcvList = []
+# 
+# os.chdir(SubjectFolder)
+# for Files in ParamsFileList:
+#     if Files in TempDict.keys():  
+#         Params = CircusParser(Files)
+#         Results = load_data(Params, 'results')
+#         KeyList = Results["spiketimes"].keys()
+#         SpikeTimesDict = {} #c'est là dedans que sont stockés tous les 
+#         #spiketimes de ma file classés par 'temp_x': [.....]
+#         for Keys in KeyList:
+#             Spiketimes = Results["spiketimes"][Keys]
+#             SpikeTimesDict[Keys] = Spiketimes #je remplis mon SpikeTimesDict
+#             continue
+#         CurrentTemplateList = TempDict[Files] # ici je crée une liste des 
+#         #templates tels que figurés dans mon csv: "2" ou "0+2"
+#         for Elt in CurrentTemplateList:
+#             FileID.append(Files)
+#             Template.append(Elt)
+#             Elt1 = Elt.replace("+", " ")
+#             Elt2 = Elt1.split() #je splite chaque éléments pour ensuite pouvoir
+#             #fusionner les spiketimes correspondants
+#             FinalSpikeTimes = []
+#             for Elt3 in Elt2:
+#                 FinalSpikeTimes.append(SpikeTimesDict["temp_{0}".format(Elt3)])
+#                 continue
+#             FinalSpikeTimes = [item for sublist in FinalSpikeTimes for item in sublist]
+#             FinalSpikeTimes = sorted(FinalSpikeTimes)
+#             ISI = np.diff(FinalSpikeTimes)
+#             ISI.sort()
+#             ISIInfTo500Ms = 0
+#             ISISupTo500Ms = 0
+#             for j in ISI:
+#                 if j > 24000: ## à adapter: 12000 pour 24000 Hz
+#                     ISISupTo500Ms +=1
+#                 else:
+#                     ISIInfTo500Ms += 1
+#             ISIcvList.append((np.std(ISI)/np.mean(ISI))/48) ## à adapter
+#             ## 24000 Hz = 24
+#             print("ISIcv", Files)
+# 
+# FinalDict = {}
+# FinalDict["FileID"] = FileID
+# FinalDict["Template"] = Template
+# FinalDict["ISIcvList"] = ISIcvList
+# 
+# df = pd.DataFrame(FinalDict)
+# df.to_csv("D:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/ISIcv{0}.csv".format(Subject))
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Je moyenne maintenant les ISIcv par sujet
+# =============================================================================
+# =============================================================================
+# SourceFile = "E:/Ecrits/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/ResultsPostKatia/DataBaseAfterAllChangementsDueToKatia/FilesToUse+++++/FinalDataFrameMergedGPI25WithoutBads.csv"
+# data = pd.read_csv(SourceFile, sep = ",", decimal = ".", encoding = 'latin1')
+# 
+# print(data)
+# 
+# 
+# MeanISIcvList = []
+# IDList = []
+# for i in range(0, len(data.loc[:, "ID"]) + 1):
+#     Subject = data.loc[i, "ID"][0:4]
+#     if i == 0:
+#         IDList.append(Subject)
+#         ISIcv = []
+#         ISIcv.append(data.loc[i, "ISIcv"])
+#         continue
+#     elif i == len(data.loc[:, "ID"]) -1:
+#         ISIcv.append(data.loc[i, "ISIcv"])
+#         MeanISIcvList.append(np.mean(ISIcv))
+#         break
+#     elif data.loc[i - 1, "ID"][0:4] == Subject:
+#         ISIcv.append(data.loc[i, "ISIcv"])
+#         continue
+#     elif data.loc[i - 1, "ID"][0:4] != Subject:
+#         MeanISIcvList.append(np.mean(ISIcv))
+#         ISIcv = []
+#         ISIcv.append(data.loc[i, "ISIcv"])
+#         IDList.append(Subject)
+#         continue
+# 
+# FinalDict = {}
+# FinalDict["ID"] = IDList
+# FinalDict["ISIcv"] = MeanISIcvList
+# 
+# df = pd.DataFrame(FinalDict)
+# df.to_csv("E:/Ecrits/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/ResultsPostKatia/DataBaseAfterAllChangementsDueToKatia/FilesToUse+++++/ISIcvBySubjects.csv")
+# =============================================================================
+# =============================================================================
+
+
+# =============================================================================
+# Je veux le nombre d'enregistrements et de trace par sujet'
+# =============================================================================
+# =============================================================================
+# File = "E:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/FinalDataFrameMergedGPI.csv"
+# data = pd.read_csv(File, sep = ";", decimal = ".", encoding = 'latin1')
+# 
+# IDList = []
+# RecordingsList = []
+# TracesList = []
+# for i in range(0, len(data.loc[:, "ID"]) + 1):
+#     Subject = data.loc[i, "ID"][0:4]
+#     if i == 0:
+#         Recordings = 0
+#         Traces = 0
+#         IDList.append(Subject)
+#         Recordings += 1
+#         Traces += 1
+#         continue
+#     elif i + 1 == len(data.loc[:, "ID"]):
+#         RecordingsList.append(Recordings)
+#         if data.loc[i, "Channel"] != data.loc[i - 1, "Channel"]:
+#             Traces += 1
+#             TracesList.append(Traces)
+#             break
+#         else:
+#             TracesList.append(Traces)
+#             break
+#     elif data.loc[i - 1, "ID"][0:4] == Subject:
+#         if data.loc[i - 1, "ID"] == data.loc[i, "ID"]:
+#             if data.loc[i - 1, "Channel"] == data.loc[i, "Channel"]:
+#                 continue
+#             else:
+#                 Traces += 1
+#                 continue
+#         elif data.loc[i - 1, "ID"] != data.loc[i, "ID"]:
+#             Recordings += 1
+#             Traces += 1
+#             continue
+#     elif data.loc[i - 1, "ID"][0:4] != Subject:
+#         IDList.append(Subject)
+#         RecordingsList.append(Recordings)
+#         TracesList.append(Traces)
+#         Recordings = 0
+#         Traces = 0
+#         Recordings += 1
+#         Traces += 1
+#         continue
+#     continue
+# 
+# FinalDict = {}
+# FinalDict["ID"] = IDList
+# FinalDict["Recordings"] = RecordingsList
+# FinalDict["Traces"] = TracesList
+# 
+# df = pd.DataFrame(FinalDict)
+# df.to_csv("E:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/RecordingsNumber.csv")      
+# =============================================================================
+# =============================================================================
+
+# =============================================================================
+# Je veux maintenant le nombre d'unité détectée sujet'
+# =============================================================================
+# =============================================================================
+# File = "D:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/FinalDataFrameMergedGPI.csv"
+# data = pd.read_csv(File, sep = ";", decimal = ".", encoding = 'latin1')
+# 
+# IDList = []
+# UnitList = []
+# for i in range(0, len(data.loc[:, "ID"]) + 1):
+#     Subject = data.loc[i, "ID"][0:4]
+#     if i == 0:
+#         Units = 0
+#         IDList.append(Subject)
+#         Units += 1
+#         continue
+#     elif i + 1 == len(data.loc[:, "ID"]):
+#         Units += 1
+#         UnitList.append(Units)
+#         break
+#     elif data.loc[i - 1, "ID"][0:4] == Subject:
+#         Units += 1
+#         continue
+#     elif data.loc[i - 1, "ID"] != Subject:
+#         IDList.append(Subject)
+#         UnitList.append(Units)
+#         Units = 0
+#         Units += 1
+#         continue
+#     continue
+# 
+# FinalDict = {}
+# FinalDict["ID"] = IDList
+# FinalDict["NumberOfUnits"] = UnitList
+# 
+# df = pd.DataFrame(FinalDict)
+# df.to_csv("D:/Ecrits/Bourse fondamental/UnitTouretteDystonie/OfficialFileToWorkWith/ResultsPostMLW/UnitsNumber.csv")
+# =============================================================================
+# =============================================================================
